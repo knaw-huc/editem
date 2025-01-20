@@ -111,3 +111,9 @@ The idea is that the workflow for a single corpus can be followed by a Jupyter
 notebook in the programs directory of that corpus. Ideally, such notebooks can
 also be run on the local computer of the developer, in a clone of the repo that
 hosts the corpus files.
+
+# Questions
+
+1.  Is it possible to implement the full stack (TextRepo, AnnoRepo, Broccoli, Elastic)
+    in one Docker container? Because then we have the best control over all steps
+    involved in publishing?
