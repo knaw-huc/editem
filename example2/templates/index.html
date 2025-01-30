@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Workflow runner</title>
+	<link rel="stylesheet" type="text/css" href="/bootstrap.min.css"/>
+	<link rel="stylesheet" type="text/css" href="/styles.css"/>
+  <script src="/jquery.js"></script>
+  <script src="/socket.io.min.js"></script>
+  <script src="/client.js"></script>
+</head>
+<body>
+  <h1>Projects</h1>
+  <a href="/project/1/">Project 1</a>
+  <a href="/project/2/">Project 2</a>
+
+  <h1>Workflow {{projectId}}</h1>
+  <input type="hidden" id="projectId" value="{{projectId}}">
+  <button id="runctl" type="button">Run</button>
+  <button id="killctl" type="button">Kill</button>
+  <div id="runactor" actor=""></div>
+  <div id="progress"></div>
+  <div id="killactor" actor=""></div>
+  <div id="status">not yet done</div>
+</body>
+</html>

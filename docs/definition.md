@@ -66,10 +66,10 @@ For each corpus, we do certain upfront actions
     *   `report`: entry to various report files generated during the execution
         of the workflow (e.g. validation errors, element statistics, link
         reports, custom checks)
-	*   `annorepo`: access annotations in AnnoRepo
-	*   `textrepo`: access text fragments in TextRepo
-	*   `broccoli`: access Broccoli
-	*   `tav` : entry to the published-for-preview corpus (the TAV interface)
+	*   NO `annorepo`: access annotations in AnnoRepo
+	*   NO `textrepo`: access text fragments in TextRepo
+	*   NO `broccoli`: access Broccoli
+	*   `preview` : entry to the published-for-preview corpus (the TAV interface)
 
 # The workflow system
 

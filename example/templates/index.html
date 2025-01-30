@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Workflow runner</title>
+  <script src="/jquery.js"></script>
+  <script src="/socket.io.min.js"></script>
+  <script src="/workflow.js"></script>
+  <style type="text/css">
+.msg {
+    font-family: monospace;
+    white-space: pre;
+}
+.info {
+    background-color: #ffffee;
+}
+.error {
+    background-color: #ffaaaa;
+}
+.warning {
+    background-color: #ffddaa;
+}
+.good {
+    background-color: #aaffaa;
+}
+.progress {
+    height: 10rem;
+}
+button {
+    background-color: #ddddff;
+    font-size: large;
+}
+table {
+    width: 100%;
+}
+td {
+    width: 45%;
+    vertical-align: top;
+}
+  </style>
+</head>
+<body>
+  <h1>Workflow</h1>
+<p>Click the run and kill buttons to start/stop tasks.</p>
+
+<p>The <i>function</i> and <i>script</i> tasks perform the same function,
+but the function task is coded within the web server, and the script task
+is coded in a separate python file which is run through a shell.</p>
+
+<p>Each task consists of 10 steps, and issues a progress message after each step.
+Some progress messages are informational, others are error messages.</p>
+
+<p>All messages appear in real time.</p>
+
+<p>Most steps take 1 second, but steps 3 and 8 take 3 and 8 seconds respectively.</p>
+
+<p>You can kill a task during a long running step, because tasks react to stop signals
+even if they do not issue progress messages.</p>
+
+<p>Both tasks can run concurrently. Moreover, you can open several browser windows,
+and see the progress in each of them.</p>
+
+<p>You can start a task in one window and kill it in another.
+Try clicking random buttons without waiting for tasks to complete;
+try to refresh one browser window while tasks are running.</p>
+
+  {{effects | safe }}
+</body>
+</html>

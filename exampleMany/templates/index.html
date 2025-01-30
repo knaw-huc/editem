@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Workflow runner</title>
+  <script src="/jquery.js"></script>
+  <script src="/socket.io.min.js"></script>
+  <script src="/workflow.js"></script>
+</head>
+<body>
+  <h1>Workflow</h1>
+  {{ buttons | safe }}
+  <h2>Effects:</h2>
+  <div id="progress"></div>
+  <div id="status">not yet done</div>
+</body>
+</html>
