@@ -6,9 +6,7 @@ from task import Task
 from helpers import console
 
 PORT = 5050
-
 ASYNC_MODE = "threading"  # N.B. eventlet will not work fully with script tasks
-
 TASKS = ("function", "script")
 
 
@@ -20,6 +18,11 @@ TT = Task(socketio)
 
 @app.route("/")
 def index():
+    """Create the HTML for a task runner.
+
+    We create buttons to run and kill two tasks,
+    plus areas where the progress and status of each task are collected.
+    """
     buttons = ["", ""]
     status = ["", ""]
     progress = ["", ""]
@@ -63,7 +66,7 @@ def index():
 
 @app.route("/run/<string:task>/", methods=["GET", "POST"])
 def run(task):
-    """Reponds to clicking a specific run button."""
+    """Reponds to clicking the run button of a specific task."""
     if TT.isIdle(task):
         console(f"start {task}")
         stat = "start-issued"
@@ -81,7 +84,7 @@ def run(task):
 
 @app.route("/kill/<string:task>/", methods=["GET", "POST"])
 def kill(task):
-    """Reponds to clicking a specific kill button."""
+    """Reponds to clicking the kill button of a specific task"""
     if TT.isIdle(task):
         stat = "kill-prevented"
         msg = "not running"
@@ -106,6 +109,8 @@ def staticFile(path):
 
 @socketio.on("connect")
 def test_connect():
+    """Verify the websocket connection.
+    """
     emit("after connect", {"data": "Ready to run"})
 
 

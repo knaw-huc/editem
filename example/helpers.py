@@ -22,6 +22,8 @@ class Timestamp:
 
         The representation is in seconds, with 2 decimals if the number of seconds
         is less than 10, else without decimals.
+
+        All times between 0 and 99 seconds take exactly 6 characters.
         """
         interval = time.time() - self.stamp
         if interval < 10:
