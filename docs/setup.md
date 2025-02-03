@@ -8,7 +8,7 @@ How would our pipeline look like on a virtual machine?
 - data/
   |-- workflow/ 
   |   |-- .git/
-  |   |-- docker-compose-textfabric.yml # every step its own service?
+  |   |-- docker-compose-textfabric.yml # every step its own docker-compose setup, or one big yml?
   |   |-- docker-compose-untanngle.yml
   |   |-- docker-compose-brinta.yml
   |   |-- docker-compose-tav.yml
