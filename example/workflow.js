@@ -6,9 +6,12 @@ const tasks = ["function", "script"]
 
 /* time recording
  */
-let now = Date.now()
-const elapsed = () => {
-  const interval = (Date.now() - now) / 1000
+const now = {}
+const elapsed = task => {
+  if (!now[task]) {
+    now[task] = Date.now()
+  }
+  const interval = (Date.now() - now[task]) / 1000
   return interval < 10 ? ` ${interval.toFixed(2)}s` : `${interval.toFixed(0)}s   `
 }
 
@@ -73,7 +76,7 @@ const responseError = task => (jqXHR, stat) => {
  */
 const respondClick = (task, resetTime) => aUrl => {
   if (resetTime) {
-    now = Date.now()
+    now[task] = Date.now()
   }
   $.ajax({
     type: "POST",
@@ -119,8 +122,8 @@ const setupSocket = () => {
   })
 
   socket.on("progress", msg => {
-    const ctm = elapsed()
     const { tm, task, kind, text } = msg
+    const ctm = elapsed(task)
     const msgRep = `server ${tm}, client ${ctm}: «${task}» [${kind.slice(
       0,
       3
@@ -130,8 +133,8 @@ const setupSocket = () => {
   })
 
   socket.on("status", message => {
-    const ctm = elapsed()
     const { tm, task, stat, msg } = message
+    const ctm = elapsed(task)
     const msgRep = msg ? `(${msg})` : ""
     const statRep = `server ${tm}, client ${ctm}: «${task}» status ${stat} (${msgRep})`
     console.log(statRep)
