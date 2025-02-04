@@ -9,9 +9,9 @@ Q:
 Workflow steps from data to TAV:
 - textfabric
   - input: corpus repo
-  - output: wasm
+  - output: watm
 - untanngle 
-  - input: wasm
+  - input: watm
   - output: web annotations json
 - annorepo indexer (also part of untanngle?)
   - input: web annotations json
