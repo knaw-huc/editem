@@ -13,7 +13,7 @@ Workflow steps from data to TAV:
 - untanngle 
   - input: watm
   - output: web annotations json, physical + logical segmented text json (uploaded to textrepo)
-- annorepo indexer (also part of untanngle?)
+- annorepo indexer (also part of untanngle)
   - input: web annotations json
   - output: annorepo api
 - brinta indexer
