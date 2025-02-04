@@ -12,7 +12,7 @@ Workflow steps from data to TAV:
   - output: watm
 - untanngle 
   - input: watm
-  - output: web annotations json
+  - output: web annotations json, physical + logical segmented text json (uploaded to textrepo)
 - annorepo indexer (also part of untanngle?)
   - input: web annotations json
   - output: annorepo api
@@ -26,7 +26,7 @@ Workflow steps from data to TAV:
   - input: broccoli (+ iiif-server: also part workflow?)
 
 ## Directories
-How would our pipeline look like on a virtual machine?
+How would our pipeline look on a virtual machine?
 (First attempt...)
 
 ```md
