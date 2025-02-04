@@ -246,8 +246,9 @@ class Task:
                 # start wrapper to run a script in a subprocess
 
                 proc = Popen(
-                    "python script.py",
+                    "exec python script.py",
                     shell=True,
+                    start_new_session=True,
                     text=True,
                     bufsize=None,
                     stdout=PIPE,
@@ -260,6 +261,7 @@ class Task:
                         # here is the check on the kill signal
                         interrupted = True
                         proc.kill()
+                        proc.wait()
                         break
 
                     returnCode = proc.poll()
