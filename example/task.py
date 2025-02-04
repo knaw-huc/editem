@@ -1,3 +1,4 @@
+import sys
 import select
 from subprocess import Popen, PIPE
 from threading import Lock, Event
@@ -176,13 +177,45 @@ class Task:
         socketio.emit("status", dict(tm=TM.elapsed(), task=task, stat="start"))
         interrupted = False
 
+        def flush(toEnd=False):
+            """Read stderr and stdout of a process in parallel without blocking.
+
+            Parameters
+            ----------
+            toEnd: boolean, optional False
+                If True, the complete remainders on stderr and stdout is read.
+                Meant for when the process has stopped.
+                If False, at most a single line of stderr and/or stdout will be read.
+            """
+            # trick: use select to wait for stdout and stderr in parallel
+            readyStreams = select.select([proc.stdout, proc.stderr], [], [], 0.5)[0]
+
+            for stream in readyStreams:
+                kind = "info" if stream is proc.stdout else "error"
+                text = stream.read() if toEnd else stream.readline()
+
+                if not text:
+                    continue
+
+                # text = text.rstrip("\n")
+
+                socketio.emit(
+                    "progress",
+                    dict(
+                        tm=TM.elapsed(),
+                        task=task,
+                        kind=kind,
+                        text=text,
+                    ),
+                )
+
         try:
             if task == "function":
 
                 # start function code
 
                 errorSteps = {2, 4}
-                longSteps = {3: 5, 8: 8}
+                longSteps = {8: 5, 9: 8}
 
                 for i in range(1, 11):
                     if self.isStopped(task):
@@ -222,44 +255,22 @@ class Task:
                 )
 
                 while True:
+                    flush()
                     if self.isStopped(task):
                         # here is the check on the kill signal
                         interrupted = True
+                        proc.kill()
                         break
 
                     returnCode = proc.poll()
+                    sys.stderr.write(f"{returnCode=}\n")
+                    sys.stderr.flush()
 
                     if returnCode is not None:
                         # script has ended, return code is known
                         break
 
-                    # trick: use select to wait for stdout and stderr in parallel
-                    readyStreams = select.select(
-                        [proc.stdout, proc.stderr], [], [], 0.5
-                    )[0]
-                    # the result is a list of streams that have new data
-
-                    for stream in readyStreams:
-                        # determine which stream this is
-                        kind = "info" if stream is proc.stdout else "error"
-                        text = stream.readline()
-
-                        if not text:
-                            continue
-
-                        text = text.rstrip("\n")
-
-                        # emit the new data as a progress message of the right kind
-                        socketio.emit(
-                            "progress",
-                            dict(
-                                tm=TM.elapsed(),
-                                task=task,
-                                kind=kind,
-                                text=f"script {text}",
-                            ),
-                        )
-
+                flush(toEnd=True)
                 stat = "success" if returnCode == 0 else "failure"
                 msg = f"exit with {returnCode}" if returnCode else ""
 
