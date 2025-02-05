@@ -1,4 +1,7 @@
+import signal
+import sys
 import select
+import os
 from subprocess import Popen, PIPE
 from threading import Lock, Event
 
@@ -165,6 +168,21 @@ class Task:
 
             However, the problem disappears by choosing `threading` as async mode.
 
+        !!! note "child processes"
+            The script that is executed in the script task, in turn starts another
+            python script, clock.py, which is a never ending script that writes
+            increasing integers to the file ticks.txt.
+
+            If you use the kill() method to kill the process that runs script.py,
+            this child process is not killed, and will run forever.
+            In order to kill script.py plus all the processes it may have spawned,
+            we do the following:
+
+            1.  When we start script.py with Popen, we pass `start_new_session=True`.
+            1.  When we terminate script.py, we do not call `proc.kill()`, but instead
+                we use `os.killpg()` to send a termination signal to all processes
+                in the same (new) process group as the one that runs script.py.
+
         Parameters
         ----------
         task: string
@@ -176,13 +194,45 @@ class Task:
         socketio.emit("status", dict(tm=TM.elapsed(), task=task, stat="start"))
         interrupted = False
 
+        def flush(toEnd=False):
+            """Read stderr and stdout of a process in parallel without blocking.
+
+            Parameters
+            ----------
+            toEnd: boolean, optional False
+                If True, the complete remainders on stderr and stdout is read.
+                Meant for when the process has stopped.
+                If False, at most a single line of stderr and/or stdout will be read.
+            """
+            # trick: use select to wait for stdout and stderr in parallel
+            readyStreams = select.select([proc.stdout, proc.stderr], [], [], 0.5)[0]
+
+            for stream in readyStreams:
+                kind = "info" if stream is proc.stdout else "error"
+                text = stream.read() if toEnd else stream.readline()
+
+                if not text:
+                    continue
+
+                # text = text.rstrip("\n")
+
+                socketio.emit(
+                    "progress",
+                    dict(
+                        tm=TM.elapsed(),
+                        task=task,
+                        kind=kind,
+                        text=text,
+                    ),
+                )
+
         try:
             if task == "function":
 
                 # start function code
 
                 errorSteps = {2, 4}
-                longSteps = {3: 5, 8: 8}
+                longSteps = {8: 5, 9: 8}
 
                 for i in range(1, 11):
                     if self.isStopped(task):
@@ -213,8 +263,9 @@ class Task:
                 # start wrapper to run a script in a subprocess
 
                 proc = Popen(
-                    "python script.py",
-                    shell=True,
+                    [sys.executable, "script.py"],
+                    shell=False,
+                    start_new_session=True,
                     text=True,
                     bufsize=None,
                     stdout=PIPE,
@@ -222,9 +273,24 @@ class Task:
                 )
 
                 while True:
+                    flush()
                     if self.isStopped(task):
                         # here is the check on the kill signal
                         interrupted = True
+                        # we terminate all child processes to
+                        # note that proc.kill() would kill the toplevel process only
+                        pgid = os.getpgid(proc.pid)
+                        os.killpg(pgid, signal.SIGTERM)
+                        # we wait for the termination of all processes in the group
+                        # use the following command to see whether the clock and script
+                        # process has disappeared
+                        # ps -A | grep -i python
+                        result = os.waitid(
+                            os.P_PGID, pgid, os.WEXITED or os.WSTOPPED or os.WCONTINUED
+                        )
+                        sys.stdout.write(f"TERMINATED PROCESS: {result=}\n")
+                        sys.stdout.flush()
+                        proc.wait()
                         break
 
                     returnCode = proc.poll()
@@ -233,33 +299,7 @@ class Task:
                         # script has ended, return code is known
                         break
 
-                    # trick: use select to wait for stdout and stderr in parallel
-                    readyStreams = select.select(
-                        [proc.stdout, proc.stderr], [], [], 0.5
-                    )[0]
-                    # the result is a list of streams that have new data
-
-                    for stream in readyStreams:
-                        # determine which stream this is
-                        kind = "info" if stream is proc.stdout else "error"
-                        text = stream.readline()
-
-                        if not text:
-                            continue
-
-                        text = text.rstrip("\n")
-
-                        # emit the new data as a progress message of the right kind
-                        socketio.emit(
-                            "progress",
-                            dict(
-                                tm=TM.elapsed(),
-                                task=task,
-                                kind=kind,
-                                text=f"script {text}",
-                            ),
-                        )
-
+                flush(toEnd=True)
                 stat = "success" if returnCode == 0 else "failure"
                 msg = f"exit with {returnCode}" if returnCode else ""
 

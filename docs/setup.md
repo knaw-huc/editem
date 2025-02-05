@@ -10,7 +10,7 @@ Workflow steps from data to TAV:
 - untanngle 
   - services: untanngle, annorepo, textrepo
   - input: watm
-  - output: annorepo web annotations, textrepo texts
+  - output: web annotations json (uploaded to annorepo), physical + logical segmented text json (uploaded to textrepo)
 - indexer
   - services: indexer, annorepo, elasticsearch
   - input: web annotations, index config
@@ -20,7 +20,7 @@ Workflow steps from data to TAV:
   - input: text, annotations, iiif manifests
   
 ## Directories
-How would our pipeline look like on a virtual machine?
+How would our pipeline look on a virtual machine?
 (First attempt...)
 
 ```md
