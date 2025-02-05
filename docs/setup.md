@@ -16,8 +16,8 @@ Workflow steps from data to TAV:
   - input: web annotations, index config
   - output: elasticsearch index
 - tav
-  - services: tav, broccoli, elasticsearch, annorepo, textrepo, iiif server
-  - input: text, annotations, iiif manifests
+  - services: tav, broccoli, elasticsearch, annorepo, textrepo, iiif server?
+  - input: es index, web annotations, manifests?
   
 ## Directories
 How would our pipeline look on a virtual machine?
