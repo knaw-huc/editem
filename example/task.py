@@ -279,13 +279,17 @@ class Task:
                         interrupted = True
                         # we terminate all child processes to
                         # note that proc.kill() would kill the toplevel process only
-                        os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
-                        # we wait for the termination of the toplevel process only
-                        # because I do not see a method to wait for the termination
-                        # of all child processes
-                        # on the command line, run
+                        pgid = os.getpgid(proc.pid)
+                        os.killpg(pgid, signal.SIGTERM)
+                        # we wait for the termination of all processes in the group
+                        # use the following command to see whether the clock and script
+                        # process has disappeared
                         # ps -A | grep -i python
-                        # to see whether the clock process has disappeared
+                        result = os.waitid(
+                            os.P_PGID, pgid, os.WEXITED or os.WSTOPPED or os.WCONTINUED
+                        )
+                        sys.stdout.write(f"TERMINATED PROCESS: {result=}\n")
+                        sys.stdout.flush()
                         proc.wait()
                         break
 
