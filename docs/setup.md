@@ -2,29 +2,23 @@
 
 ## Workflow
 
-Q: 
-- missing steps? 
-- correct input/output?
-
 Workflow steps from data to TAV:
 - textfabric
-  - input: corpus repo
+  - services: textfabric 
+  - input: corpus repo (tei and more)
   - output: watm
 - untanngle 
+  - services: untanngle, annorepo, textrepo
   - input: watm
-  - output: web annotations json
-- annorepo indexer (also part of untanngle?)
-  - input: web annotations json
-  - output: annorepo api
-- brinta indexer
-  - input: annorepo api 
-  - output: es-index
-- broccoli
-  - input: annorepo api + es-index
-  - output: es-index + broccoli api
+  - output: annorepo web annotations, textrepo texts
+- indexer
+  - services: indexer, annorepo, elasticsearch
+  - input: web annotations, index config
+  - output: elasticsearch index
 - tav
-  - input: broccoli (+ iiif-server: also part workflow?)
-
+  - services: tav, broccoli, elasticsearch, annorepo, textrepo, iiif server
+  - input: text, annotations, iiif manifests
+  
 ## Directories
 How would our pipeline look like on a virtual machine?
 (First attempt...)
