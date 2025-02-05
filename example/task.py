@@ -1,5 +1,7 @@
+import signal
 import sys
 import select
+import os
 from subprocess import Popen, PIPE
 from threading import Lock, Event
 
@@ -166,6 +168,21 @@ class Task:
 
             However, the problem disappears by choosing `threading` as async mode.
 
+        !!! note "child processes"
+            The script that is executed in the script task, in turn starts another
+            python script, clock.py, which is a never ending script that writes
+            increasing integers to the file ticks.txt.
+
+            If you use the kill() method to kill the process that runs script.py,
+            this child process is not killed, and will run forever.
+            In order to kill script.py plus all the processes it may have spawned,
+            we do the following:
+
+            1.  When we start script.py with Popen, we pass `start_new_session=True`.
+            1.  When we terminate script.py, we do not call `proc.kill()`, but instead
+                we use `os.killpg()` to send a termination signal to all processes
+                in the same (new) process group as the one that runs script.py.
+
         Parameters
         ----------
         task: string
@@ -246,8 +263,8 @@ class Task:
                 # start wrapper to run a script in a subprocess
 
                 proc = Popen(
-                    "exec python script.py",
-                    shell=True,
+                    [sys.executable, "script.py"],
+                    shell=False,
                     start_new_session=True,
                     text=True,
                     bufsize=None,
@@ -260,13 +277,19 @@ class Task:
                     if self.isStopped(task):
                         # here is the check on the kill signal
                         interrupted = True
-                        proc.kill()
+                        # we terminate all child processes to
+                        # note that proc.kill() would kill the toplevel process only
+                        os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
+                        # we wait for the termination of the toplevel process only
+                        # because I do not see a method to wait for the termination
+                        # of all child processes
+                        # on the command line, run
+                        # ps -A | grep -i python
+                        # to see whether the clock process has disappeared
                         proc.wait()
                         break
 
                     returnCode = proc.poll()
-                    sys.stderr.write(f"{returnCode=}\n")
-                    sys.stderr.flush()
 
                     if returnCode is not None:
                         # script has ended, return code is known
